@@ -5,11 +5,11 @@ var canva = cvs;
 // let lockX = e.layerX;
 // let lockY = e.layerY;
 // lk1.src = "./images/locks/lock1.png";
-export function setClickDraw() {
-    canva.onmousedown= clickDraw;
+export function setClickDraw(callback) {
+    canva.onmousedown= x=>clickDraw(x,callback);
 }
 
-function clickDraw(event) {
+function clickDraw(event,callback) {
     let lockX = event.layerX;
     let lockY = event.layerY;
     let baseX = 0;
@@ -21,7 +21,7 @@ function clickDraw(event) {
     let src = "./images/locks/lock1.png";
     let lockLocationId = Math.ceil((lockX-baseX)/50)*3+Math.ceil((lockY-baseY)/50);
     drawLock(lockX,lockY,src,"hi this is new");
-    return lockLocationId;
+    callback(lockLocationId);
 }
 
 export function drawLock(lockX, lockY, src, text) {

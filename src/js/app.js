@@ -1,4 +1,4 @@
-import {drawLock,setClickDraw} from "./canvas-op";
+import {drawLock,setClickDraw} from "./canvas-op.js";
 
 let App = {
     web3Provider: null,
@@ -67,7 +67,7 @@ let App = {
     },
 
     bindEvents: function () {
-        $(document).on('click', '.btn-adopt', App.handleDrawLock);
+        $(document).on('click', '.btn-adopt', App.handleClick);
     },
 
     markLocks: function (adopters, account) {
@@ -92,13 +92,14 @@ let App = {
             console.log(err.message);
         });
     },
-
-    handleDrawLock: function (event) {
+    handleClick:function(event){
         event.preventDefault();
         // todo:later var petId = parseInt($(event.target).data('id'));
         document.getElementById('tipps').innerText = 'click a location above to add the lock!'
-        var lockInstance;
-        setClickDraw();
+        setClickDraw(App.handleDrawLock);
+    },
+    handleDrawLock: function (locationID) {
+        let lockInstance;
         web3.eth.getAccounts(function (error, accounts) {
             if (error) {
                 console.log(error);
@@ -113,12 +114,13 @@ let App = {
                 //   gas: 10})
                 // t.methods.getInfo().call
                 // Execute adopt as a transaction by sending account
-                return lockInstance.drawLock(petId, {
+                console.log("locationID",locationID)
+                return lockInstance.drawLock(locationID, {
                     from: account,
                     value: web3.toWei(2, "ether")
                 });
             }).then(function (result) {
-                return App.markAdopted();
+                return App.markLocks();
             }).catch(function (err) {
                 console.log(err.message);
             });
