@@ -11,8 +11,6 @@ contract LoveLock {
         beneficiary = msg.sender;
     }
 
-    event NewNote(address, string note);
-    event ModifyNote(address, uint index);
 
     function drawLock(uint lockLocationId) public payable returns (uint) {
         require(msg.value>=2 ether);
@@ -32,7 +30,6 @@ contract LoveLock {
 
     function addNote( string memory note) public {
         notes[beneficiary].push(note);
-        emit NewNote(beneficiary, note);
     }
 
     function getNotesLen(address own) public view returns (uint) {
@@ -45,11 +42,12 @@ contract LoveLock {
     
     function modifyNote(address own, uint index, string memory note) public {
         notes[own][index] = note;
-        emit ModifyNote(own, index);
     }
+    
     function addTitle(address own, string memory title) public {
 	titles[own] = title;    
     }
+    
     function getTitle(address own) public returns (string) {
         return titles[own];
     }
