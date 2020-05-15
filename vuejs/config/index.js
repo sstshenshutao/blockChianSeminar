@@ -8,7 +8,7 @@ module.exports = {
   dev: {
 
     // Paths
-    assetsSubDirectory: 'static',
+    assetsSubDirectory: 'public',
     assetsPublicPath: '/',
     proxyTable: {},
 
@@ -20,7 +20,7 @@ module.exports = {
     notifyOnErrors: true,
     poll: false, // https://webpack.js.org/configuration/dev-server/#devserver-watchoptions-
 
-    
+
     /**
      * Source Maps
      */
