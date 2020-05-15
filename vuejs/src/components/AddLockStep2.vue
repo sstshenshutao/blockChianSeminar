@@ -4,11 +4,12 @@
             <el-header>
                 <h1>Love Lock -- Block Chain</h1>
             </el-header>
-            <canvas-draw></canvas-draw>
+            <canvas-view></canvas-view>
             <el-main>
                 <el-row>
-                    <el-button type="primary" plain>SEE ALL LOCKS</el-button>
+                    <el-button type="primary" plain @click="gotoStep1()">PREVIOUS</el-button>
                     <el-button type="success" plain @click="gotoMain()">TO MAIN PAGE</el-button>
+                    <el-button type="primary" plain @click="gotoStep3()">NEXT</el-button>
                 </el-row>
                 <el-tag type="info">Follow the steps below to add a love lock!</el-tag>
             </el-main>
@@ -22,62 +23,65 @@
             </el-step>
         </el-steps>
         <el-container>
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-8 col-sm-push-2">
-                        <h1 id="tipps" class="text-center">Choose A Lock</h1>
-                        <hr/>
-                        <br/>
-                    </div>
-                </div>
-
-                <div id="petsRow" class="row">
-                    <!-- PETS LOAD HERE -->
-                </div>
-            </div>
-            <div id="petTemplate" style="display: none;">
-                <div class="col-sm-12 col-md-5 col-lg-2">
-                    <div class="panel panel-default panel-pet">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Scrappy</h3>
-                        </div>
-                        <div class="panel-body">
-                            <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center"
-                                 style="width: 100%;"
-                                 src="https://animalso.com/wp-content/uploads/2017/01/Golden-Retriever_6.jpg"
-                                 data-holder-rendered="true">
-                            <br/><br/>
-                            <strong>Breed</strong>: <span class="pet-breed">Golden Retriever</span><br/>
-                            <strong>Age</strong>: <span class="pet-age">3</span><br/>
-                            <strong>Location</strong>: <span class="pet-location">Warren, MI</span><br/><br/>
-                            <button class="btn btn-default btn-adopt" type="button" data-id="0" @click="gotoStep2()">
-                                choose
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <el-aside width="200px">
+                <h3>you choice:</h3>
+                <img src="" id="lock-choice">
+                <br>
+                <p>this is a wonderful lock!</p>
+                <p>id: {{this.$route.params['lockInfo'].id}}</p>
+            </el-aside>
+            <el-container>
+                <el-header>
+                    <h1>Write down the title and notes</h1>
+                </el-header>
+                <el-main>
+                    Title:
+                    <el-input
+                            placeholder="write down the title"
+                            prefix-icon="el-icon-date"
+                            v-model="inputTitle">
+                    </el-input>
+                    Notes:
+                    <el-input
+                            placeholder="write down your notes"
+                            prefix-icon="el-icon-date"
+                            v-model="inputNotes">
+                    </el-input>
+                </el-main>
+            </el-container>
         </el-container>
     </div>
 
 </template>
 
 <script>
-    import CanvasDraw from "./CanvasDraw";
+    import CanvasView from "./CanvasView";
     import * as $ from "jquery"
 
     export default {
         name: 'Index',
-        components: {CanvasDraw},
+        components: {CanvasView},
         data() {
             return {
                 url1: '',
                 msg: 'Welcome to Your Vue.js App',
-                stepNumber: 1
+                stepNumber: 2,
+                inputTitle: '',
+                inputNotes: ''
             }
         },
         mounted() {
-            this.initLocks()
+            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].lockSrc == "undefined" || typeof this.$route.params['lockInfo'].id !== "number") {
+                this.$message({
+                    type: 'info',
+                    message: 'choose lock firstly!'
+                });
+                this.gotoStep1();
+            }
+            let lockImg = document.getElementById('lock-choice');
+            lockImg.src = this.$route.params['lockInfo'].lockSrc;
+            lockImg.width = 100
+            lockImg.height = 100
         },
         methods: {
             gotoMain() {
@@ -85,25 +89,21 @@
                     path: `/`,
                 })
             },
-            initLocks() {
-                // Load pets.
-                let jsonData = require('../assets/locks.json');
-                // axios.get(lockPath).then(data => {
-                let data = jsonData;
-                var petsRow = $('#petsRow');
-                var petTemplate = $('#petTemplate');
-                console.log("petTemplate", petTemplate);
-                for (let i = 0; i < data.length; i++) {
-                    petTemplate.find('.panel-title').text(data[i].name);
-                    petTemplate.find('img').attr('src', data[i].picture);
-                    petTemplate.find('.pet-breed').text(data[i].breed);
-                    petTemplate.find('.pet-age').text(data[i].age);
-                    petTemplate.find('.pet-location').text(data[i].location);
-                    petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
-
-                    petsRow.append(petTemplate.html());
-                }
-                // });
+            gotoStep3() {
+                let newLockInfo =Object.assign(this.$route.params['lockInfo'],
+                    {title: this.inputTitle, notes: this.inputNotes});
+                console.log("newLockInfo",newLockInfo);
+                this.$router.push({
+                    name: 'AddLockStep3',
+                    params: {
+                        lockInfo:newLockInfo
+                    }
+                })
+            },
+            gotoStep1() {
+                this.$router.push({
+                    path: '/add_lock',
+                })
             }
         }
     }
@@ -129,5 +129,14 @@
 
     body > .el-container {
         margin-bottom: 40px;
+    }
+
+    .el-container:nth-child(5) .el-aside,
+    .el-container:nth-child(6) .el-aside {
+        line-height: 260px;
+    }
+
+    .el-container:nth-child(7) .el-aside {
+        line-height: 320px;
     }
 </style>

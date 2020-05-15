@@ -4,10 +4,14 @@
             <el-header>
                 <h1>Love Lock -- Block Chain</h1>
             </el-header>
-            <canvas-draw></canvas-draw>
+            <canvas-draw :title="title"
+                         :id="id"
+                         :lockSrc="lockSrc"
+                         :notes="notes"
+                         @clicked="clicked"></canvas-draw>
             <el-main>
                 <el-row>
-                    <el-button type="primary" plain>SEE ALL LOCKS</el-button>
+                    <el-button type="primary" plain @click="gotoStep2()">PREVIOUS</el-button>
                     <el-button type="success" plain @click="gotoMain()">TO MAIN PAGE</el-button>
                 </el-row>
                 <el-tag type="info">Follow the steps below to add a love lock!</el-tag>
@@ -23,42 +27,52 @@
             </el-step>
         </el-steps>
         <el-container>
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-8 col-sm-push-2">
-                        <h1 id="tipps" class="text-center">Choose A Lock</h1>
-                        <hr/>
-                        <br/>
-                    </div>
-                </div>
-
-                <div id="petsRow" class="row">
-                    <!-- PETS LOAD HERE -->
-                </div>
-            </div>
-            <div id="petTemplate" style="display: none;">
-                <div class="col-sm-12 col-md-5 col-lg-2">
-                    <div class="panel panel-default panel-pet">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Scrappy</h3>
-                        </div>
-                        <div class="panel-body">
-                            <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center"
-                                 style="width: 100%;"
-                                 src="https://animalso.com/wp-content/uploads/2017/01/Golden-Retriever_6.jpg"
-                                 data-holder-rendered="true">
-                            <br/><br/>
-                            <strong>Breed</strong>: <span class="pet-breed">Golden Retriever</span><br/>
-                            <strong>Age</strong>: <span class="pet-age">3</span><br/>
-                            <strong>Location</strong>: <span class="pet-location">Warren, MI</span><br/><br/>
-                            <button class="btn btn-default btn-adopt" type="button" data-id="0" @click="gotoStep2()">
-                                choose
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <el-header>
+                <h3>Click the picture above to set the location</h3>
+            </el-header>
+            <el-main>
+                <p>here is the lock information</p>
+                <el-collapse v-model="activeNames">
+                    <el-collapse-item title="Title" name="1">
+                        <div>{{title}}</div>
+                    </el-collapse-item>
+                    <el-collapse-item title="Lock Style" name="2">
+                        <el-image
+                                style="width: 100px; height: 100px"
+                                :src="lockSrc"
+                                fit="fill"></el-image>
+                    </el-collapse-item>
+                    <el-collapse-item title="Notes" name="3">
+                        <div>{{notes}}</div>
+                    </el-collapse-item>
+                    <el-collapse-item title="Location" name="4">
+                        <div>{{location}}</div>
+                    </el-collapse-item>
+                </el-collapse>
+            </el-main>
         </el-container>
+        <el-dialog title="The transaction information" :visible.sync="dialogTableVisible">
+            <el-main>
+                <el-button type="success" plain @click="ok()">OK</el-button>
+                <el-collapse v-model="activeNames">
+                    <el-collapse-item title="Title" name="1">
+                        <div>{{title}}</div>
+                    </el-collapse-item>
+                    <el-collapse-item title="Lock Style" name="2">
+                        <el-image
+                                style="width: 100px; height: 100px"
+                                :src="lockSrc"
+                                fit="fill"></el-image>
+                    </el-collapse-item>
+                    <el-collapse-item title="Notes" name="3">
+                        <div>{{notes}}</div>
+                    </el-collapse-item>
+                    <el-collapse-item title="Location" name="4">
+                        <div>{{location}}</div>
+                    </el-collapse-item>
+                </el-collapse>
+            </el-main>
+        </el-dialog>
     </div>
 
 </template>
@@ -74,37 +88,63 @@
             return {
                 url1: '',
                 msg: 'Welcome to Your Vue.js App',
-                stepNumber: 1
+                stepNumber: 3,
+                title: '',
+                lockSrc: this.$route && this.$route.params && this.$route.params['lockInfo'] ? this.$route.params['lockInfo'].lockSrc : undefined,
+                notes: '',
+                location: -1,
+                id: -1,
+                activeNames: ['1', '2', '3', '4'],
+                dialogTableVisible: false
             }
         },
         mounted() {
-            this.initLocks()
+            console.log("LockInfo3", this.$route.params['lockInfo']);
+            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].lockSrc == "undefined" || typeof this.$route.params['lockInfo'].id !== "number") {
+                this.$message({
+                    type: 'info',
+                    message: 'choose lock firstly!'
+                });
+                this.gotoStep1();
+            }
+            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].title !== "string" || typeof this.$route.params['lockInfo'].notes !== "string") {
+                this.$message({
+                    type: 'info',
+                    message: 'write notes firstly!'
+                });
+                this.gotoStep2();
+            }
+            this.title = this.$route.params['lockInfo'].title;
+            this.lockSrc = this.$route.params['lockInfo'].lockSrc;
+            this.notes = this.$route.params['lockInfo'].notes;
+            this.id = this.$route.params['lockInfo'].id;
+            this.location = 'please click the picture to get the locationID';
         },
         methods: {
+            ok() {
+                // todo: this is the entry of web3!!!!
+            },
+            clicked(locationID) {
+                this.location = locationID;
+                this.dialogTableVisible = true
+            },
+            gotoStep2() {
+                this.$router.push({
+                    name: 'AddLockStep2',
+                    params: {
+                        lockInfo: this.$route.params['lockInfo']
+                    }
+                })
+            },
+            gotoStep1() {
+                this.$router.push({
+                    path: '/add_lock',
+                })
+            },
             gotoMain() {
                 this.$router.push({
                     path: `/`,
                 })
-            },
-            initLocks() {
-                // Load pets.
-                let jsonData = require('../assets/locks.json');
-                // axios.get(lockPath).then(data => {
-                let data = jsonData;
-                var petsRow = $('#petsRow');
-                var petTemplate = $('#petTemplate');
-                console.log("petTemplate", petTemplate);
-                for (let i = 0; i < data.length; i++) {
-                    petTemplate.find('.panel-title').text(data[i].name);
-                    petTemplate.find('img').attr('src', data[i].picture);
-                    petTemplate.find('.pet-breed').text(data[i].breed);
-                    petTemplate.find('.pet-age').text(data[i].age);
-                    petTemplate.find('.pet-location').text(data[i].location);
-                    petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
-
-                    petsRow.append(petTemplate.html());
-                }
-                // });
             }
         }
     }

@@ -19,24 +19,50 @@
                 defaultLockUrl: require('../assets/images/locks/lock1.png'),
                 canvasOpInstance: ''
             }
-        }
-        ,
+        },
+        props: {
+            title: String,
+            id: Number,
+            lockSrc: String,
+            notes: String
+        },
         mounted() {
             initBG(this.bgUrl);
             this.canvasOpInstance = CanvasOp.getInstance({
                 lockSrc: this.defaultLockUrl
             });
-            this.canvasOpInstance.bindClickDraw(this.handleCanvasClickEvent)
+            this.canvasOpInstance.bindClickDraw(this.handleCanvasClickEvent, {
+                title: "I LOVE LL Online",
+                lockSrc: "this guy is too lazy, nothing here"
+            })
+        },
+        watch: {
+            title: 'bindClickDraw',
+            id: 'bindClickDraw',
+            lockSrc: 'bindClickDraw',
+            notes: 'bindClickDraw'
         },
         methods: {
+            bindClickDraw() {
+                this.canvasOpInstance.bindClickDraw(this.handleCanvasClickEvent, {
+                    title: this.title,
+                    lockSrc: this.lockSrc
+                }, this.isLocationAvailable)
+            },
             handleCanvasClickEvent(locationID) {
                 // // this is click => draw
                 //    call show the content and title of locationID
                 //    if there are no locks with locationID, do
+                // drawable
+                this.$emit('clicked', locationID);
                 this.$message({
                     type: 'info',
                     message: 'hey, you draw one lock, pay it now'
                 });
+
+            },
+            isLocationAvailable(event) {
+                return true;
             }
         }
     }

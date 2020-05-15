@@ -4,11 +4,11 @@
             <el-header>
                 <h1>Love Lock -- Block Chain</h1>
             </el-header>
-            <canvas-draw></canvas-draw>
+            <canvas-view></canvas-view>
             <el-main>
                 <el-row>
-                    <el-button type="primary" plain>SEE ALL LOCKS</el-button>
                     <el-button type="success" plain @click="gotoMain()">TO MAIN PAGE</el-button>
+                    <el-button type="primary" plain @click="gotoStep2()">NEXT</el-button>
                 </el-row>
                 <el-tag type="info">Follow the steps below to add a love lock!</el-tag>
             </el-main>
@@ -17,7 +17,6 @@
             <el-step title="Step 1" icon="el-icon-edit">
             </el-step>
             <el-step title="Step 2" icon="el-icon-upload">
-
             </el-step>
             <el-step title="Step 3" icon="el-icon-picture">
             </el-step>
@@ -64,17 +63,22 @@
 </template>
 
 <script>
-    import CanvasDraw from "./CanvasDraw";
+    import CanvasView from "./CanvasView";
     import * as $ from "jquery"
 
     export default {
         name: 'Index',
-        components: {CanvasDraw},
+        components: {CanvasView},
         data() {
             return {
                 url1: '',
                 msg: 'Welcome to Your Vue.js App',
-                stepNumber: 1
+                stepNumber: 1,
+                locksSrc: [
+                    require('../assets/images/locks/lock1.png'),
+                    require('../assets/images/locks/lock2.png'),
+                    require('../assets/images/locks/lock3.png')
+                ]
             }
         },
         mounted() {
@@ -96,25 +100,27 @@
                 console.log("petTemplate", petTemplate);
                 for (let i = 0; i < data.length; i++) {
                     petTemplate.find('.panel-title').text(data[i].name);
-                    petTemplate.find('img').attr('src', data[i].picture);
+                    petTemplate.find('img').attr('src', this.locksSrc[i % 3]);
                     petTemplate.find('.pet-breed').text(data[i].breed);
                     petTemplate.find('.pet-age').text(data[i].age);
                     petTemplate.find('.pet-location').text(data[i].location);
                     petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
-
                     petsRow.append(petTemplate.html());
                 }
+                $(document).on('click', '.btn-adopt', this.gotoStep2);
                 // });
             },
-            gotoStep2() {
-                console.log("gotoStep2");
+            gotoStep2(event) {
+                let lockID = event ? parseInt($(event.target).data('id')) : 0;
+                console.log("gotoStep2 with lockID", lockID);
                 this.$router.push({
-                    path: '/add_lock_step2',
-                })
-            },
-            gotoStep3() {
-                this.$router.push({
-                    path: '/add_lock_step3',
+                    name: 'AddLockStep2',
+                    params: {
+                        lockInfo: {
+                            id: lockID,
+                            lockSrc: this.locksSrc[lockID % 3]
+                        }
+                    }
                 })
             }
         }

@@ -35,11 +35,24 @@ export default class CanvasOp {
     /**
      * this will invoke callback(locationID)
      * @param callback
+     * @param parameters
+     * @param beforeCheck
      */
-    bindClickDraw(callback) {
+    bindClickDraw(callback, parameters, beforeCheck) {
         console.log("bindClickDraw:this.cvs", this.cvs)
-        this.cvs.onmousedown = x => this.clickDraw(x, callback);
+        this['drawParas'] = parameters;
+        if (beforeCheck) {
+            this.cvs.onmousedown = x => {
+                beforeCheck(x) && this.clickDraw(x, callback)
+            };
+        } else {
+            this.cvs.onmousedown = x => {
+                this.clickDraw(x, callback)
+            };
+        }
+
     }
+
     bindClickView(callback) {
         console.log("bindClickView:this.cvs", this.cvs)
         this.cvs.onmousedown = x => this.clickView(x, callback);
@@ -48,10 +61,11 @@ export default class CanvasOp {
     setDrawOptions(options) {
         this.options = options;
     }
+
     clickView(event, callback) {
         let lockX = event.layerX;
         let lockY = event.layerY;
-        console.log("clickView",lockX,lockY);
+        console.log("clickView", lockX, lockY);
         let baseX = (this.options['boundary'] && this.options['boundary']['x']) ? this.options['boundary']['x'][0] : 0;
 
         let baseY = (this.options['boundary'] && this.options['boundary']['y']) ? this.options['boundary']['y'][0] : 180;
@@ -65,10 +79,11 @@ export default class CanvasOp {
         let locationID = CanvasOp.calculateLocationId(lockX, lockY, baseX, baseY);
         callback(locationID);
     }
+
     clickDraw(event, callback) {
         let lockX = event.layerX;
         let lockY = event.layerY;
-        console.log("clickDraw",lockX,lockY);
+        console.log("clickDraw", lockX, lockY);
         let baseX = (this.options['boundary'] && this.options['boundary']['x']) ? this.options['boundary']['x'][0] : 0;
 
         let baseY = (this.options['boundary'] && this.options['boundary']['y']) ? this.options['boundary']['y'][0] : 180;
@@ -80,16 +95,35 @@ export default class CanvasOp {
             return;
         }
         // todo change later lock style
-        let src = this.options['lockSrc'];
+        let src = this.drawParas['lockSrc'] || this.options['lockSrc'];
         //calculate LockLocationID
-
-        this.drawLock(lockX, lockY, src, "new Love Lock");
         let locationID = CanvasOp.calculateLocationId(lockX, lockY, baseX, baseY);
+        let normPara = CanvasOp.calculateNormalizationXY(locationID, baseX, baseY);
+        this.drawLock(normPara.x, normPara.y, src, this.drawParas['title']);
+
         callback(locationID);
     }
 
-    static calculateLocationId(x, y, baseX, baseY) {
-        return Math.ceil((x - baseX) / 50) * 3 + Math.ceil((y - baseY) / 50);
+    static calculateLocationId(x, y, baseX, baseY, width = 50, height = 50) {
+        console.log("click xy", x, y);
+        let xOffset = Math.floor((x - baseX) / width);
+        let yOffset = Math.floor((y - baseY) / height);
+        yOffset = yOffset > 2 ? 2 : yOffset;
+        console.log("xyOffset", xOffset, yOffset);
+        return xOffset * 3 + yOffset;
+    }
+
+    static calculateNormalizationXY(locationID, baseX, baseY, width = 50, height = 50) {
+        console.log("locationID", locationID);
+        let row = Math.floor(locationID % 3);
+        let column = Math.floor(locationID / 3);
+        console.log("row", row);
+        console.log("column", column);
+        console.log("new XY", column * width + baseX + width / 2, row * height + baseY + height / 2);
+        return {
+            x: column * width + baseX + width / 2,
+            y: row * height + baseY + height / 2
+        }
     }
 
     /**
