@@ -7,11 +7,11 @@
             <canvas-view></canvas-view>
             <el-main>
                 <el-row>
-                <el-tag type="info">click the canvas to see the lock information</el-tag>
+                    <el-tag type="info">click the canvas to see the lock information</el-tag>
                 </el-row>
                 <el-row>
-                <el-button type="primary" plain>SEE ALL LOCKS</el-button>
-                <el-button type="success" plain @click="addLock()">ADD MY LOCK</el-button>
+                    <el-button type="primary" plain>SEE ALL LOCKS</el-button>
+                    <el-button type="success" plain @click="addLock()">ADD MY LOCK</el-button>
                 </el-row>
             </el-main>
         </el-container>
@@ -27,13 +27,14 @@
         components: {CanvasView},
         data() {
             return {
-                url1: '',
                 msg: 'Welcome to Your Vue.js App',
                 activeName: '1'
             }
         },
         mounted() {
-            this.url1 = "./public/index.html"
+            console.log("window.web3", window.web3)
+            console.log("window.ethereum", window.ethereum)
+            console.log("new Web3.providers.HttpProvider('http://localhost:7545')", new Web3.providers.HttpProvider('http://localhost:7545'))
         },
         methods: {
             addLock() {
