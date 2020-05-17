@@ -1,0 +1,17 @@
+{
+  "name": "love-lock",
+  "version": "1.0.0",
+  "description": "this is the core smart contract of Love Lock, which is a small prototype of smart contract using for the course \"Advanced Seminar Blockchain Technologies (IN2107, IN4909)\" at TUM",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Shutao Shen / Yuchen Zhang",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.0.1"
+  }
+}

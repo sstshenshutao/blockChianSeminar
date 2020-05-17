@@ -1,0 +1,94 @@
+KittyCore is KittyMinting : entry
+KittyMinting is KittyAuction  : use for creating new gen0 cats.
+KittyAuction is KittyBreeding : public methods for auctioning or bidding on ca
+KittyBreeding is KittyOwnership: 
+KittyOwnership is KittyBase, ERC721: 721 token
+KittyBase is KittyAccessControl:  most fundamental code shared
+KittyAccessControl : CEO, CFO and COO.
+
+增家前端功能：addnotes/ transfer
+
+slot erc721 (locationid: the only property) 
+LoveLock erc721  {hang:slot, title:string, notes:string,  }  also ERC-165 (obviously!)
+need to add: tokenStyle 1-16: can be changed by coo.
+
+KittyOwnership
+    //双人模式，对象也可以transfer
+    function _approvedFor(address _claimant, uint256 _tokenId) internal view returns (bool) {
+        return kittyIndexToApproved[_tokenId] == _claimant;
+    }
+    //Grant another address the right to transfer a specific Kitty。
+
+
+KittyBase 
+ mapping (uint256 => address) public kittyIndexToOwner; 这个token属于谁
+ mapping (address => uint256) ownershipTokenCount; user账户有什么
+ mapping (uint256 => address) public kittyIndexToApproved; 允许使用transfer
+ Kitty[] kitties;
+ kitty{无tokenid}  
+
+
+
+
+
+KittyCore is KittyMinting : entry
+KittyMinting is KittyAuction  : use for creating new gen0 cats.
+KittyAuction is KittyBreeding : public methods for auctioning or bidding on ca
+KittyBreeding is KittyOwnership: 
+KittyOwnership is KittyBase, ERC721: 721 token
+
+LoveLockBase is LoveLockAccessControl:  
+	1. /*** DEFINE THE STRUCT OF LOVELOCK ***/
+		struct LoveLock {
+	        string title;
+	        string[] notes;
+	        bool isHung;
+	        uint32 notesLimit;
+	        uint32 styleId;
+    	}
+    	struct Couple {
+    		address male;
+    		address female;
+    	}
+    2. /*** CONSTANTS ***/ don't need
+    	//uint256 public secondsPerBlock = 15;
+    	//uint32[7] public notesLimit = [
+	        uint32(1 page),
+	        uint32(2 pages),
+	        uint32(5 pages),
+	        uint32(10 pages),
+	        uint32(30 pages),
+	        uint32(100 pages),
+	        uint32(unlimited pages)
+	    ];
+	3. /*** STORAGE ***/
+		LoveLock[] loveLocks;
+		mapping (uint256 => address) public loveLockIndexToOwner;
+		//the count of LLs this address has.
+		mapping (address => uint256) ownershipTokenCount;
+		// the Lock can be transferred from both sides of thecouple.
+		mapping (uint256 => Couple) public lockIndexToApproved;
+	4. /*** FUNCTIONS ***/
+		 /** no requirement 
+		 	if deleteLock : _transfer to address(0)
+		 **/
+		 function _transfer(address _from, address _to, uint256 _tokenId) internal {
+		 	ownershipTokenCount[_to]++;
+		 	loveLockIndexToOwner[_tokenId] = _to;
+		 	if (_from != address(0)) {
+	            ownershipTokenCount[_from]--;
+	            // clear Approval of LLs
+	            delete lockIndexToApproved[_tokenId];
+        	}
+        	Transfer(_from, _to, _tokenId);
+		 }
+		 /** add note **/
+		 function _addNote(uint256 _lockID, string memory _note) internal {
+		 	
+		 }
+
+	5. /*** EVENTS ***/
+	event Transfer(address from, address to, uint256 tokenId);
+
+LoveLockAccessControl : 
+	CEO and COO.
