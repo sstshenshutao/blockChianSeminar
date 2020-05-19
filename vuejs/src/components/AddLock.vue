@@ -25,7 +25,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12 col-sm-8 col-sm-push-2">
-                        <h1 id="tipps" class="text-center">Choose A Lock</h1>
+                        <h1 id="tipps" class="text-center">Buy A Lock</h1>
                         <hr/>
                         <br/>
                     </div>
@@ -35,6 +35,16 @@
                     <!-- PETS LOAD HERE -->
                 </div>
             </div>
+            <!--            tokenID:tokenIDs[i],-->
+            <!--            owner:tmp.owner,-->
+            <!--            price:tmp.price,-->
+            <!--            loveLock:lock-->
+            <!--            string title;-->
+            <!--            string[] notes;-->
+            <!--            uint32 currentLength;-->
+            <!--            uint32 notesLimit;-->
+            <!--            uint32 styleId;-->
+            <!--            uint256 slotPos;-->
             <div id="petTemplate" style="display: none;">
                 <div class="col-sm-12 col-md-5 col-lg-2">
                     <div class="panel panel-default panel-pet">
@@ -47,9 +57,11 @@
                                  src="https://animalso.com/wp-content/uploads/2017/01/Golden-Retriever_6.jpg"
                                  data-holder-rendered="true">
                             <br/><br/>
-                            <strong>Breed</strong>: <span class="pet-breed">Golden Retriever</span><br/>
-                            <strong>Age</strong>: <span class="pet-age">3</span><br/>
-                            <strong>Location</strong>: <span class="pet-location">Warren, MI</span><br/><br/>
+                            <strong>Lock ID</strong>: <span class="token-id">tokenID</span><br/>
+                            <strong>Price</strong>: <span class="price">price</span><br/>
+                            <strong>Notes Limit</strong>: <span class="notes-limit">notesLimit</span><br/>
+                            <strong>styleId</strong>: <span class="style-id">styleId</span><br/>
+                            <strong>owner</strong>: <span class="owner">owner</span><br/><br/>
                             <button class="btn btn-default btn-adopt" type="button" data-id="0" @click="gotoStep2()">
                                 choose
                             </button>
@@ -75,50 +87,119 @@
                 msg: 'Welcome to Your Vue.js App',
                 stepNumber: 1,
                 locksSrc: [
+                    require('../assets/images/locks/lock0.png'),
                     require('../assets/images/locks/lock1.png'),
                     require('../assets/images/locks/lock2.png'),
                     require('../assets/images/locks/lock3.png')
-                ]
+                ],
+                allSaleObjs: []
             }
         },
-        mounted() {
-            this.initLocks()
+        async mounted() {
+            await this.appInit();
+            await this.initLocks()
         },
         methods: {
+            async buy(event) {
+                let app = this.$llApp;
+                let i = parseInt($(event.target).data('id'));
+                let lockID = this.allSaleObjs[i].tokenID;
+                let result = await app.buyLock(lockID, this.allSaleObjs[i].price);
+                console.log("i", i)
+                // console.log("$(event.target)",$(event.target).data('id'))
+                console.log("buy result", result)
+                if (result) {
+                    this.gotoStep2(lockID, this.locksSrc[this.allSaleObjs[i].loveLock.styleId])
+                }
+            },
+            async appInit() {
+                let app = this.$llApp;
+                if (!app.initOK) {
+                    await app.init();
+                }
+            },
+            async getToSellLength() {
+                let app = this.$llApp;
+                // console.log(this.cLevelParameter.inputCOOAddress);
+                let length = 0
+                try {
+                    length = await app.getToSellLength();
+                } catch (e) {
+                    this.$message.error(e);
+                }
+                return length;
+            },
+            async getAllSaleTokenIDs() {
+                let length = await this.getToSellLength();
+                console.log("getAllSaleTokenIDs::length", length)
+                let app = this.$llApp;
+                let tokenIDs = [];
+                // console.log(this.cLevelParameter.inputCOOAddress);
+                try {
+                    for (let i = 0; i < length; i++) {
+                        tokenIDs.push(await app.getSaleLock(i))
+                    }
+                } catch (e) {
+                    this.$message.error(e);
+                }
+                console.log("getAllSaleTokenIDs", tokenIDs)
+                return tokenIDs;
+            },
+            async getAllSaleObjs() {
+                let ret = [];
+                let app = this.$llApp;
+                let tokenIDs = await this.getAllSaleTokenIDs();
+                for (let i = 0; i < tokenIDs.length; i++) {
+                    let tmp = await app.tokenToSaleLocks(tokenIDs[i])
+                    let lock = await app.loveLocks(tokenIDs[i]);
+                    ret.push({
+                        tokenID: tokenIDs[i],
+                        owner: tmp.owner,
+                        price: tmp.price,
+                        loveLock: lock
+                    })
+                }
+                console.log("getAllSaleObjs", ret)
+                this.allSaleObjs = ret;
+                return ret;
+            },
             gotoMain() {
                 this.$router.push({
                     path: `/`,
                 })
             },
-            initLocks() {
-                // Load pets.
-                let jsonData = require('../assets/locks.json');
+            async initLocks() {
+                // Load locks.
+                let dataObjs = await this.getAllSaleObjs();
                 // axios.get(lockPath).then(data => {
-                let data = jsonData;
+                let data = dataObjs;
                 var petsRow = $('#petsRow');
                 var petTemplate = $('#petTemplate');
-                console.log("petTemplate", petTemplate);
+
+
+                // console.log("petTemplate", petTemplate);
                 for (let i = 0; i < data.length; i++) {
-                    petTemplate.find('.panel-title').text(data[i].name);
-                    petTemplate.find('img').attr('src', this.locksSrc[i % 3]);
-                    petTemplate.find('.pet-breed').text(data[i].breed);
-                    petTemplate.find('.pet-age').text(data[i].age);
-                    petTemplate.find('.pet-location').text(data[i].location);
-                    petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
+                    petTemplate.find('.owner').text(data[i].owner);
+                    petTemplate.find('img').attr('src', this.locksSrc[data[i].loveLock.styleId]);
+                    petTemplate.find('.price').text(data[i].price);
+                    petTemplate.find('.notes-limit').text(data[i].loveLock.notesLimit);
+                    petTemplate.find('.style-id').text(data[i].loveLock.styleId);
+                    petTemplate.find('.token-id').text(data[i].tokenID);
+                    petTemplate.find('.btn-adopt').attr('data-id', i);
+                    // console.log("petTemplate.html()", petTemplate.html())
                     petsRow.append(petTemplate.html());
                 }
-                $(document).on('click', '.btn-adopt', this.gotoStep2);
+                $(document).on('click', '.btn-adopt', this.buy);
                 // });
             },
-            gotoStep2(event) {
-                let lockID = event ? parseInt($(event.target).data('id')) : 0;
+            gotoStep2(lockID, src) {
                 console.log("gotoStep2 with lockID", lockID);
                 this.$router.push({
                     name: 'AddLockStep2',
                     params: {
                         lockInfo: {
                             id: lockID,
-                            lockSrc: this.locksSrc[lockID % 3]
+                            lockSrc: src
                         }
                     }
                 })

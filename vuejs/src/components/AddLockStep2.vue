@@ -71,7 +71,7 @@
             }
         },
         mounted() {
-            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].lockSrc == "undefined" || typeof this.$route.params['lockInfo'].id !== "number") {
+            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].lockSrc == "undefined" || typeof this.$route.params['lockInfo'].id == "undefined") {
                 this.$message({
                     type: 'info',
                     message: 'choose lock firstly!'

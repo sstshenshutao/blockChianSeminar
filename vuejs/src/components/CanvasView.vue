@@ -17,18 +17,32 @@
             return {
                 bgUrl: require('../assets/images/bgNew.png'),
                 defaultLockUrl: require('../assets/images/locks/lock1.png'),
-                canvasOpInstance: ''
+                canvasOpInstance: '',
+                locksSrc: [
+                    require('../assets/images/locks/lock0.png'),
+                    require('../assets/images/locks/lock1.png'),
+                    require('../assets/images/locks/lock2.png'),
+                    require('../assets/images/locks/lock3.png')
+                ],
             }
         }
         ,
-        mounted() {
+        async mounted() {
             initBG(this.bgUrl);
             this.canvasOpInstance = CanvasOp.getInstance({
                 lockSrc: this.defaultLockUrl
             });
             this.canvasOpInstance.bindClickView(this.handleCanvasClickEvent)
+            await this.appInit();
+            await this.getHangObj();
         },
         methods: {
+            async appInit() {
+                let app = this.$llApp;
+                if (!app.initOK) {
+                    await app.init();
+                }
+            },
             open() {
                 this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
                     confirmButtonText: '确定',
@@ -55,6 +69,20 @@
                     message: 'this is click=>view' +
                         'hey, no locks there, see another one'
                 });
+            },
+            async getHangObj() {
+                let ret = [];
+                let app = this.$llApp;
+                let len = await app.getUsedSlotLength();
+                console.log("len",len)
+                for (let i = 0; i < len; i++) {
+                    let slotId = await app.getUsedSlot(i);
+                    let tokenId= await app.getLockOnSlot(slotId);
+                    let lockOne = await app.loveLocks(tokenId);
+                    console.log("lockOne",lockOne)
+                    let normPara = CanvasOp.calculateNormalizationXY(lockOne.slotPos-1, 0, 180);
+                    this.canvasOpInstance.drawLock(normPara.x, normPara.y, this.locksSrc[lockOne.styleId], lockOne.title);
+                }
             }
         }
     }

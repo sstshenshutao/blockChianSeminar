@@ -53,7 +53,7 @@
         </el-container>
         <el-dialog title="The transaction information" :visible.sync="dialogTableVisible">
             <el-main>
-                <el-button type="success" plain @click="ok()">OK</el-button>
+                <el-button type="success" plain @click="hang()">Hang It</el-button>
                 <el-collapse v-model="activeNames">
                     <el-collapse-item title="Title" name="1">
                         <div>{{title}}</div>
@@ -100,7 +100,7 @@
         },
         mounted() {
             console.log("LockInfo3", this.$route.params['lockInfo']);
-            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].lockSrc == "undefined" || typeof this.$route.params['lockInfo'].id !== "number") {
+            if (!this.$route.params['lockInfo'] || typeof this.$route.params['lockInfo'].lockSrc == "undefined" || typeof this.$route.params['lockInfo'].id == "undefined") {
                 this.$message({
                     type: 'info',
                     message: 'choose lock firstly!'
@@ -121,8 +121,10 @@
             this.location = 'please click the picture to get the locationID';
         },
         methods: {
-            ok() {
-                // todo: this is the entry of web3!!!!
+            async hang() {
+                let app = this.$llApp;
+                let offsetLoc = this.location + 1;
+                await app.hangLL(this.id, offsetLoc)
             },
             clicked(locationID) {
                 this.location = locationID;

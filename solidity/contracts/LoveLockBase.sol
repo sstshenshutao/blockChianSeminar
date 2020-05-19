@@ -2,8 +2,11 @@ pragma solidity ^0.6.0;
 
 import "./LoveLockAccessControl.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "./SaleLoveLock.sol";
 
 contract LoveLockBase is LoveLockAccessControl, ERC721 {
+    using EnumerableSet for EnumerableSet.UintSet;
     /*** DEFINE THE STRUCT OF LOVELOCK ***/
     constructor() ERC721("Love Lock", "LL") public {
         ceoAddress = msg.sender;
@@ -17,7 +20,7 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
         uint32 currentLength;
         uint32 notesLimit;
         uint32 styleId;
-        int128 slotPos; //-1 for not hung
+        uint256 slotPos; //0 for not hung, slot index start from 1
     }
 
     //    struct Couple {
@@ -31,9 +34,11 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
     mapping(uint256 => LoveLock) public loveLocks;
     uint256 public numLoveLocks; // An integer storing the total number of LLs, use for create the LLs(together with mapping)
     //     the mapper that maintain the usedSlot   (slot:true/false)
-    mapping(int128 => bool) public usedSlot;
+    //    mapping(int128 => bool) public usedSlot;
+    // slot index start from 1 , eg: [1,3,5,7,....]
+    EnumerableSet.UintSet usedSlot;
     //     the mapper that maintain the   (slot:tokenID), for quick retrieval
-    mapping(int128 => uint256) slotToToken;
+    mapping(uint256 => uint256) slotToToken;
     // LLs => address(owner)
     // replaced by ownerOf:   mapping(uint256 => address) public loveLockIndexToOwner;
     //the count of LLs this address has.
@@ -46,6 +51,10 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
     // todo: expose the public functions based on the internal functions
     // todo: the convenient methods(form LoveLock.sol need to integrate here)
     /*** those functions have no requirement, need to be implemented in the layer -- finished, they are public and safe***/
+    function getContractAddress() public view returns (address) {
+        return address(this);
+    }
+
     function deleteLock(uint256 tokenId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "you are not the owner or approver");
         _burn(tokenId);
@@ -62,27 +71,38 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
     function getNote(uint tokenId, uint index) public view returns (string memory) {
         return loveLocks[tokenId].notes[index];
     }
-    //  hang LL, -1 for pull down
-    function hangLL(uint tokenId, int128 slotId) public {
+    //  hang LL, 0 for pull down
+    function hangLL(uint tokenId, uint256 slotId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "you are not the owner or approver");
         // this slot must not be taken by other users
-        require(!usedSlot[slotId], "this is already taken by others");
+        require(!usedSlot.contains(slotId), "this is already taken by others");
         // remove the previous used slot, if exists
-        require(slotId >= - 1, "slotID must >= -1");
-        int128 slotIndex = loveLocks[tokenId].slotPos;
-        if (slotIndex > - 1) {
-            usedSlot[slotIndex] = false;
+        require(slotId >= 0, "slotID must >= 0, normal slot starts from 1");
+        uint256 previousSlot = loveLocks[tokenId].slotPos;
+        // if the previousSlot exists
+        if (previousSlot > 0) {
+            usedSlot.remove(previousSlot);
+            delete slotToToken[previousSlot];
+            loveLocks[tokenId].slotPos = 0;
         }
         // add a new slot
-        if (slotId != - 1) {
-            usedSlot[slotId] = true;
+        if (slotId != 0) {
+            usedSlot.add(slotId);
             loveLocks[tokenId].slotPos = slotId;
             slotToToken[slotId] = tokenId;
         }
     }
-    // must use getMethod usedSlot first, and then getLockOnSlot(slotID)
-    function getLockOnSlot(int128 slotId) public view returns (uint) {
-        require(usedSlot[slotId], "this slot is not used");
+
+    function getUsedSlotLength() public view returns (uint) {
+        return usedSlot.length();
+    }
+    // return the n-th used slot
+    function getUsedSlot(uint nth) public view returns (uint) {
+        return usedSlot.at(nth);
+    }
+    // get the lock on a specific slot
+    function getLockOnSlot(uint slotId) public view returns (uint) {
+        require(usedSlot.contains(slotId), "this slot is not used");
         return slotToToken[slotId];
     }
     /*** sale method***/
@@ -123,7 +143,6 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
         LoveLock storage _loveLock = loveLocks[numLoveLocks];
         _loveLock.notesLimit = notesLimit;
         _loveLock.styleId = styleId;
-        _loveLock.slotPos = 0 - 1;
         numLoveLocks++;
         // emit our Create event to show we mint a LoveLock(different with token transfer event above!!!)
         emit Create(owner, newLoveLockID);
@@ -132,44 +151,4 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
 
     /*** EVENTS ***/
     event Create(address owner, uint256 tokenId);
-}
-
-contract SaleLoveLock is LoveLockAccessControl {
-    constructor() public {
-        ceoAddress = msg.sender;
-    }
-    uint256[] public toSellTokens;
-    mapping(uint256 => SaleLock) tokenToSaleLocks;
-
-    struct SaleLock {
-        address owner;
-        uint price;
-    }
-
-    ERC721 public nonFungibleContract;
-
-    function setNonFungibleContract(address _nftAddress) public onlyCEO {
-        ERC721 candidateContract = ERC721(_nftAddress);
-        nonFungibleContract = candidateContract;
-    }
-
-    // user can buy Locks from the 'toSellTokens'
-    function buyLock(uint256 tokenId) payable public {
-        require(tokenToSaleLocks[tokenId].owner != 0x0000000000000000000000000000000000000000, "the token is not there");
-        // the price  offered by the user must be greater than {{lockPrice}}
-        require(msg.value >= tokenToSaleLocks[tokenId].price, "you don't pay enough price to buy the lock");
-        // deal! call the function transfer in the nonFungibleContract, since I have the approval, this won't be failed
-        nonFungibleContract.safeTransferFrom(tokenToSaleLocks[tokenId].owner, msg.sender, tokenId);
-    }
-    // user or the other contract must do the approval of this contract firstly
-    function createSale(uint tokenId, uint price, address owner) public {
-        require(nonFungibleContract.getApproved(tokenId) == address(this), "you didn't approve your lock to the contract");
-        tokenToSaleLocks[tokenId].owner = owner;
-        tokenToSaleLocks[tokenId].price = price;
-        toSellTokens.push(tokenId);
-    }
-    // how many locks to sell
-    function getToSellLength() public view returns (uint){
-        return toSellTokens.length;
-    }
 }
