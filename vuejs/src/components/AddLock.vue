@@ -70,6 +70,9 @@
                 </div>
             </div>
         </el-container>
+        <el-dialog title="buying" :visible.sync="dialogBuyingVisible">
+            You are buying the lock, please wait until confirmed.
+        </el-dialog>
     </div>
 
 </template>
@@ -92,7 +95,8 @@
                     require('../assets/images/locks/lock2.png'),
                     require('../assets/images/locks/lock3.png')
                 ],
-                allSaleObjs: []
+                allSaleObjs: [],
+                dialogBuyingVisible:false
             }
         },
         async mounted() {
@@ -104,11 +108,13 @@
                 let app = this.$llApp;
                 let i = parseInt($(event.target).data('id'));
                 let lockID = this.allSaleObjs[i].tokenID;
+                this.dialogBuyingVisible =true;
                 let result = await app.buyLock(lockID, this.allSaleObjs[i].price);
                 console.log("i", i)
                 // console.log("$(event.target)",$(event.target).data('id'))
                 console.log("buy result", result)
                 if (result) {
+                    this.dialogBuyingVisible= false;
                     this.gotoStep2(lockID, this.locksSrc[this.allSaleObjs[i].loveLock.styleId])
                 }
             },
@@ -150,6 +156,7 @@
                 let app = this.$llApp;
                 let tokenIDs = await this.getAllSaleTokenIDs();
                 for (let i = 0; i < tokenIDs.length; i++) {
+                    console.log("debug getAllSaleObjs::tokenIDs[i]",tokenIDs[i])
                     let tmp = await app.tokenToSaleLocks(tokenIDs[i])
                     let lock = await app.loveLocks(tokenIDs[i]);
                     ret.push({

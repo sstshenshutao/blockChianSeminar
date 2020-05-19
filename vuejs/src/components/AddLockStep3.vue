@@ -73,6 +73,9 @@
                 </el-collapse>
             </el-main>
         </el-dialog>
+        <el-dialog title="hanging" :visible.sync="dialogHangingVisible">
+            You are hanging the lock, please wait until confirmed.
+        </el-dialog>
     </div>
 
 </template>
@@ -95,7 +98,8 @@
                 location: -1,
                 id: -1,
                 activeNames: ['1', '2', '3', '4'],
-                dialogTableVisible: false
+                dialogTableVisible: false,
+                dialogHangingVisible:false
             }
         },
         mounted() {
@@ -124,7 +128,15 @@
             async hang() {
                 let app = this.$llApp;
                 let offsetLoc = this.location + 1;
-                await app.hangLL(this.id, offsetLoc)
+                this.dialogHangingVisible=true;
+                let result=await app.hangLL(this.id, offsetLoc)
+                if (result){
+                    this.dialogHangingVisible=false;
+                    this.$message({
+                        type: 'success',
+                        message: 'successful!'
+                    });
+                }
             },
             clicked(locationID) {
                 this.location = locationID;

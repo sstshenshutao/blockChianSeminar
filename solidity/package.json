@@ -12,6 +12,7 @@
   "author": "Shutao Shen / Yuchen Zhang",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^3.0.1"
+    "@openzeppelin/contracts": "^3.0.1",
+    "@truffle/hdwallet-provider": "^1.0.35"
   }
 }

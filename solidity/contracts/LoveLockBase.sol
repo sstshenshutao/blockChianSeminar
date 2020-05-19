@@ -148,7 +148,13 @@ contract LoveLockBase is LoveLockAccessControl, ERC721 {
         emit Create(owner, newLoveLockID);
         return newLoveLockID;
     }
-
+    //get the money out
+    function ceoPullMoney(uint amountRequested) public onlyCEO {
+        msg.sender.transfer(amountRequested);
+    }
+    function getContractBalance() public onlyCEO view returns (uint){
+        return address(this).balance;
+    }
     /*** EVENTS ***/
     event Create(address owner, uint256 tokenId);
 }

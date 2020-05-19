@@ -15,6 +15,9 @@ export default class App {
     }
 
     async init() {
+        if (this.initOK) {
+            return;
+        }
         await this.initWeb3();
         this.initContract();
         await this.initLlbInstance();
@@ -126,6 +129,7 @@ export default class App {
     }
 
     async loveLocks(index) {
+        index =index.toString();
         await this.llbMethod();
         return await this.llbInstance.loveLocks(index);
     }
@@ -135,6 +139,8 @@ export default class App {
     }
 
     async hangLL(tokenId, slotId) {
+        tokenId =tokenId.toString();
+        slotId =slotId.toString();
         let account;
         try {
             let accounts = await this.promisifyAccount()
@@ -155,10 +161,13 @@ export default class App {
     }
 
     async getUsedSlot(nth) {
+        nth =nth.toString();
         await this.llbMethod();
         return await this.llbInstance.getUsedSlot(nth);
     }
-    async getLockOnSlot(slotId){
+
+    async getLockOnSlot(slotId) {
+        slotId =slotId.toString();
         await this.llbMethod();
         return await this.llbInstance.getLockOnSlot(slotId);
     }
@@ -201,11 +210,13 @@ export default class App {
     }
 
     async getSaleLock(index) {
+        index =index.toString();
         await this.sllMethod();
         return await this.sllInstance.getSaleLock(index);
     }
 
     async tokenToSaleLocks(tokenId) {
+        tokenId =tokenId.toString();
         await this.sllMethod();
         return await this.sllInstance.tokenToSaleLocks(tokenId);
     }
@@ -218,6 +229,8 @@ export default class App {
      * @returns {Promise<void>}
      */
     async buyLock(tokenId, price, unit) {
+        tokenId =tokenId.toString();
+        // price =price.toString();
         let account;
         try {
             let accounts = await this.promisifyAccount()

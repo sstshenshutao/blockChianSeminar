@@ -23,6 +23,13 @@ contract SaleLoveLock is LoveLockAccessControl {
         ERC721 candidateContract = ERC721(_nftAddress);
         nonFungibleContract = candidateContract;
     }
+    //get the money out
+    function ceoPullMoney(uint amountRequested) public onlyCEO {
+        msg.sender.transfer(amountRequested);
+    }
+    function getContractBalance() public onlyCEO view returns (uint){
+        return address(this).balance;
+    }
 
     // user can buy Locks from the 'toSellTokens'
     function buyLock(uint256 tokenId) payable public {
