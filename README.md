@@ -30,7 +30,14 @@ see [proposal.md](https://github.com/sstshenshutao/blockChianSeminar/blob/master
 ```
 see README.md in ./vuejs
 ```
-
-
 ## Reference  
 Some front-end codes are cited from the truffle's Pet Shop (only the layout).
+
+## presentation framework:
+
+failed to upload the file due to unknown error.
+
+please refer to updated version,last updated on 28.5.2020:
+***
+latest version [Presentation_Framework_.31](https://drive.google.com/open?id=1skYVwEwUZ9CZO69rt5blohq6XWWtQGxm)
+
