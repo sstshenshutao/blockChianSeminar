@@ -12,7 +12,9 @@
                 <el-row>
                     <el-button type="primary" plain @click="dialogAdminVisible=true">ADMIN COMMAND</el-button>
                     <el-button type="primary" plain @click="clickViewContract()">SEE CONTRACT INFO</el-button>
-                    <el-button type="success" plain @click="addLock()">ADD MY LOCK</el-button>
+                    <el-button type="success" plain @click="addLock()">ADD New LOCK</el-button>
+                    <el-button type="primary" plain @click="getMyLock()">SEE MY LOCKS</el-button>
+
                 </el-row>
             </el-main>
         </el-container>
@@ -114,6 +116,14 @@
                 </el-collapse>
             </el-main>
         </el-dialog>
+        <el-dialog title="My Locks" :visible.sync="locksVisible">
+            <el-main>
+                <el-button type="success" plain @click="locksVisible = false">OK</el-button>
+                        <ul id="myLocks">
+
+                        </ul>
+            </el-main>
+        </el-dialog>
     </div>
 
 </template>
@@ -131,6 +141,7 @@
                 activeName: '1',
                 dialogTableVisible: false,
                 dialogAdminVisible: false,
+                locksVisible:false,
                 contractInfo: {},
                 activeContractInfos: ['1', '2'],
                 basicInfo: {
@@ -172,6 +183,36 @@
             await this.initInput();
         },
         methods: {
+            async getMyLock(){
+                this.locksVisible=true;
+                let app = this.$llApp;
+                let ttLength = await app.getTotalSupply();
+                ttLength = Number.parseInt(ttLength);
+                let ul = document.getElementById('myLocks');
+                ul.innerHTML = "";
+                for (let i = 0; i <ttLength; i++) {
+                    let tokenID = (await app.tokenOfOwnerByIndex(i)).toString();
+                    if (tokenID!=='3963877391197344453575983046348115674221700746820753546331534351508065746944'){
+
+                        let lockOne = await app.loveLocks(tokenID);
+                        let li = document.createElement("li");
+                        let notesLength = Number.parseInt(lockOne.currentLength.toString());
+                        li.appendChild(document.createTextNode("notesLength: "+notesLength));
+                        li.appendChild(document.createTextNode("; notesLimit: "+lockOne.notesLimit.toString()));
+                        li.appendChild(document.createTextNode("; styleId: "+lockOne.styleId.toString()));
+                        li.appendChild(document.createTextNode("; slotPos: "+lockOne.slotPos.toString()));
+                        if (notesLength > 0) {
+                            let nodes = "; notes:"
+                            for (let j = 0; j < notesLength; j++) {
+                                nodes+=((await app.getNote(tokenID)).toString()+'\n');
+                            }
+                            li.appendChild(document.createTextNode(nodes));
+                        }
+                        ul.appendChild(li);
+                    }
+                }
+
+            },
             async deleteLock() {
 
             },

@@ -129,7 +129,7 @@ export default class App {
     }
 
     async loveLocks(index) {
-        index =index.toString();
+        index = index.toString();
         await this.llbMethod();
         return await this.llbInstance.loveLocks(index);
     }
@@ -139,8 +139,8 @@ export default class App {
     }
 
     async hangLL(tokenId, slotId) {
-        tokenId =tokenId.toString();
-        slotId =slotId.toString();
+        tokenId = tokenId.toString();
+        slotId = slotId.toString();
         let account;
         try {
             let accounts = await this.promisifyAccount()
@@ -161,17 +161,57 @@ export default class App {
     }
 
     async getUsedSlot(nth) {
-        nth =nth.toString();
+        nth = nth.toString();
         await this.llbMethod();
         return await this.llbInstance.getUsedSlot(nth);
     }
 
     async getLockOnSlot(slotId) {
-        slotId =slotId.toString();
+        slotId = slotId.toString();
         await this.llbMethod();
         return await this.llbInstance.getLockOnSlot(slotId);
     }
 
+    async addNote(tokenId, note) {
+        tokenId = tokenId.toString();
+        await this.llbMethod();
+        let account;
+        try {
+            let accounts = await this.promisifyAccount()
+            account = accounts[0];
+            console.log("accounts", accounts)
+            let result = await this.llbInstance.addNote(tokenId, note, {
+                from: account
+            });
+            return result;
+        } catch (e) {
+            return;
+        }
+
+
+    }
+
+    async getNote(tokenId) {
+        // console.log("getNote::tokenID before",tokenId)
+        tokenId = tokenId.toString();
+        // console.log("getNote::tokenID after",tokenId)
+        await this.llbMethod();
+        return await this.llbInstance.getNote(tokenId, '0');
+    }
+
+    async tokenOfOwnerByIndex( index){
+        await this.llbMethod();
+        let account;
+        try {
+            let accounts = await this.promisifyAccount()
+            account = accounts[0];
+            console.log("accounts", accounts)
+            let result = await this.llbInstance.tokenOfOwnerByIndex(account, index);
+            return result;
+        } catch (e) {
+            return;
+        }
+    }
 
     /***  sll contract ***/
     async initSllInstance() {
@@ -210,13 +250,13 @@ export default class App {
     }
 
     async getSaleLock(index) {
-        index =index.toString();
+        index = index.toString();
         await this.sllMethod();
         return await this.sllInstance.getSaleLock(index);
     }
 
     async tokenToSaleLocks(tokenId) {
-        tokenId =tokenId.toString();
+        tokenId = tokenId.toString();
         await this.sllMethod();
         return await this.sllInstance.tokenToSaleLocks(tokenId);
     }
@@ -229,7 +269,7 @@ export default class App {
      * @returns {Promise<void>}
      */
     async buyLock(tokenId, price, unit) {
-        tokenId =tokenId.toString();
+        tokenId = tokenId.toString();
         // price =price.toString();
         let account;
         try {

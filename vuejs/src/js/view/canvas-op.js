@@ -154,7 +154,7 @@ export default class CanvasOp {
             // text
             ctx.font = "20px serif";
             ctx.fillStyle = "#FF0000";
-            ctx.fillText(text, lockX, lockY - 140);
+            ctx.fillText(text, lockX- lockWidth / 2, lockY - 140);
         };
     }
 

@@ -30,3 +30,7 @@ see [proposal.md](https://github.com/sstshenshutao/blockChianSeminar/blob/master
 ```
 see README.md in ./vuejs
 ```
+
+
+## Reference  
+Some front-end codes are cited from the truffle's Pet Shop (only the layout).

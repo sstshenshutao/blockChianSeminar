@@ -44,21 +44,6 @@
                 }
             },
             open() {
-                this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.$message({
-                        type: 'success',
-                        message: '删除成功!'
-                    });
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
             },
             handleCanvasClickEvent(locationID) {
                 // this is click => view
@@ -66,22 +51,29 @@
                 //    if there are no locks with locationID, do
                 this.$message({
                     type: 'info',
-                    message: 'this is click=>view' +
-                        'hey, no locks there, see another one'
+                    message: 'nothing here'
                 });
             },
             async getHangObj() {
                 let ret = [];
                 let app = this.$llApp;
                 let len = await app.getUsedSlotLength();
-                console.log("len",len)
+                console.log("len", len)
                 for (let i = 0; i < len; i++) {
                     let slotId = await app.getUsedSlot(i);
-                    let tokenId= await app.getLockOnSlot(slotId);
+                    let tokenId = await app.getLockOnSlot(slotId);
                     let lockOne = await app.loveLocks(tokenId);
-                    console.log("lockOne",lockOne)
-                    let normPara = CanvasOp.calculateNormalizationXY(lockOne.slotPos-1, 0, 180);
-                    this.canvasOpInstance.drawLock(normPara.x, normPara.y, this.locksSrc[lockOne.styleId], lockOne.title);
+                    let note = undefined
+                    let notesLength = Number.parseInt(lockOne.currentLength.toString());
+                    console.log("lockOnelockOnelockOne", notesLength)
+                    if (notesLength > 0) {
+                        note = await app.getNote(tokenId);
+                    }
+                    console.log("lockOne", lockOne)
+                    console.log("lockOne:tokenId", tokenId.toString())
+                    let normPara = CanvasOp.calculateNormalizationXY(lockOne.slotPos - 1, 0, 180);
+                    let content = note ? note : "No Titles and Notes";
+                    this.canvasOpInstance.drawLock(normPara.x, normPara.y, this.locksSrc[lockOne.styleId], content);
                 }
             }
         }

@@ -47,9 +47,13 @@
                             prefix-icon="el-icon-date"
                             v-model="inputNotes">
                     </el-input>
+                    <el-button type="primary" plain @click="addNote()">Add Info</el-button>
                 </el-main>
             </el-container>
         </el-container>
+        <el-dialog title="executing" :visible.sync="dialogBuyingVisible">
+            You are adding the note, please wait until confirmed.
+        </el-dialog>
     </div>
 
 </template>
@@ -67,7 +71,8 @@
                 msg: 'Welcome to Your Vue.js App',
                 stepNumber: 2,
                 inputTitle: '',
-                inputNotes: ''
+                inputNotes: '',
+                dialogBuyingVisible:false
             }
         },
         mounted() {
@@ -88,6 +93,18 @@
                 this.$router.push({
                     path: `/`,
                 })
+            },
+            async addNote() {
+                let app = this.$llApp;
+                this.dialogBuyingVisible =true;
+                let result = await app.addNote( this.$route.params['lockInfo'].id, this.inputTitle+": "+this.inputNotes);
+
+                // console.log("$(event.target)",$(event.target).data('id'))
+                console.log("add note result", result)
+                if (result) {
+                    this.dialogBuyingVisible= false;
+                    this.gotoStep3();
+                }
             },
             gotoStep3() {
                 let newLockInfo =Object.assign(this.$route.params['lockInfo'],
