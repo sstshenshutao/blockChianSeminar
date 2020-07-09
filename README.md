@@ -42,5 +42,8 @@ please refer to updated version,last updated on 28.5.2020:
 latest version [Presentation_Framework_.31](https://drive.google.com/open?id=1skYVwEwUZ9CZO69rt5blohq6XWWtQGxm)
 
 ## Timeline  
-until 20.07. : finish the presentation slides  
+until 20.06. : finish the presentation slides  
 03.07. --- 05.07. : finish the essay  
+
+https://drive.google.com/file/d/1c-xDBGwqHIlwZZo0akxFyVoLhpu-JERV/view?usp=sharing
+
