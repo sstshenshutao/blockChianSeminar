@@ -1,5 +1,6 @@
 # blockChianSeminar
 This is a solidity project of the course block-chian seminar.
+An deployed demo on the Rinkeby test-network can be found here: http://sstshenshutao.github.io/  
 
 ## proposal  
 see [proposal.md](https://github.com/sstshenshutao/blockChianSeminar/blob/master/proposal.md)  
